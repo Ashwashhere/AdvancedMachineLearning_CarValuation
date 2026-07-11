@@ -33,6 +33,20 @@
 
 <hr />
 
+<h2>📁 Project Directory Structure</h2>
+<pre><code>├── data/                  # Adverts.csv dataset source files
+├── notebooks/             # Iterative development & exploratory notebooks
+│   └── AML_Valuation.ipynb
+├── src/                   # Modular pipeline execution scripts
+│   ├── preprocessing.py   # Target encoding & imputation logic
+│   ├── selection.py       # RFECV & dimensionality reduction
+│   └── models.py          # Tuning grids & meta-ensemble classes
+├── assets/                # Inline dashboard graphics & thumbnails
+├── requirements.txt       # Framework dependency manifests
+└── README.md              # Document architecture layout</code></pre>
+
+<hr />
+
 <h2>⚙️ Methodology & Pipeline Execution</h2>
 
 <h3>1. Robust Preprocessing & Feature Engineering</h3>
@@ -126,6 +140,27 @@
 <p>
   <i><b>Key Takeaway:</b> The Meta-Ensemble strategies successfully bypassed individual algorithm limitations, while injecting latent market clusters allowed the final architectures to better account for non-linear interactions across distinct automotive sub-markets.</i>
 </p>
+
+<hr />
+
+<h2>💡 Latent Market Insights (SHAP Analysis)</h2>
+<p>
+  By mapping the K-Means cluster groups back to the physical vehicle profiles, the architecture isolated clear hidden market behaviors:
+</p>
+<ul>
+  <li><b>High-End Luxury Volatility (Cluster 0):</b> Premium marques exhibit extreme price-drop sensitivity during their first 24 months, driven heavily by immediate luxury brand depreciation.</li>
+  <li><b>High-Mileage Economy Stability (Cluster 1):</b> Entry-level commuter vehicles maintain flat, linear depreciation curves where valuations are dictated strictly by mileage thresholds rather than vehicle age.</li>
+  <li><b>Vintage Value Retention (Cluster 3):</b> Older budget tiers display a distinct pricing floor, retaining value consistently once passing a baseline age threshold regardless of marginal mileage additions.</li>
+</ul>
+
+<hr />
+
+<h2>🔮 Future Engineering Roadmap</h2>
+<ul>
+  <li><b>MLOps Pipeline Integration:</b> Transitioning experiment tracking, parameter logging, and artifact generation over to an automated <b>MLflow</b> container runtime environment.</li>
+  <li><b>Hyperparameter Search Scaling:</b> Replacing standard grid search spaces with dynamic Bayesian optimisation routines via <b>Optuna</b> to trim down meta-ensemble compilation overheads.</li>
+  <li><b>API Local Deployment:</b> Wrapping the final voting meta-regressor inside an interactive asynchronous web endpoint or a lightweight <b>Streamlit</b> interface for real-time inference testing.</li>
+</ul>
 
 <hr />
 
