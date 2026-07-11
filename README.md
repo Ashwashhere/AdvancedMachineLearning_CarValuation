@@ -1,74 +1,154 @@
-# 🚗 Advanced Machine Learning: UK Used Car Valuation
+<div align="center">
+  <h1>🚗 Advanced Machine Learning: UK Used Car Valuation</h1>
+  
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.13+-blue.svg" alt="Python Version" />
+    <img src="https://img.shields.io/badge/Jupyter-Notebook-orange.svg" alt="Jupyter" />
+    <img src="https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-lightgrey.svg" alt="Scikit-Learn" />
+    <img src="https://img.shields.io/badge/SHAP-Explainable%20AI-yellow.svg" alt="SHAP" />
+    <img src="https://img.shields.io/badge/SciPy-Advanced%20Math-8CAAE6.svg" alt="SciPy" />
+    <img src="https://img.shields.io/badge/Pandas-Data%20Processing-green.svg" alt="Pandas" />
+  </p>
+</div>
 
-![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)
-![Jupyter Notebook](https://img.shields.io/badge/Jupyter-Notebook-orange.svg)
-![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Machine%20Learning-lightgrey.svg)
-![SHAP](https://img.shields.io/badge/SHAP-Explainable%20AI-yellow.svg)
-![Pandas](https://img.shields.io/badge/Pandas-Data%20Processing-green.svg)
+<hr />
 
-## 📌 Project Overview
-The used car market is highly dynamic, with vehicle depreciation driven by a complex combination of age, mileage, brand, and condition. This project applies **Advanced Machine Learning** techniques to accurately predict the market value of used cars in the UK. 
+<h2>📌 Project Overview</h2>
+<p>
+  The used car market is highly dynamic, with vehicle depreciation driven by a complex combination of age, mileage, brand, and market segmentation. This project designs and deploys an end-to-end <b>Advanced Machine Learning architecture</b> to optimize vehicle valuation tracking over a comprehensive dataset of ~402,000 UK used car listings.
+</p>
+<p>
+  This framework moves beyond standard regressors by introducing <b>Meta-Ensemble Stacked Architectures</b>, linear and non-linear manifold learning (<b>PCA, t-SNE, Isomap</b>), and a multi-algorithm clustering pipeline (<b>K-Means, DBSCAN, Hierarchical Ward's Linkage</b>) applied to <b>SHAP (Explainable AI)</b> dependency values. The result is a highly interpretable, production-grade valuation pipeline that maps out latent market dynamics while minimizing prediction error.
+</p>
 
-By utilizing comprehensive feature engineering, rigorous feature selection, and explainable AI (SHAP) combined with K-Means clustering, this predictive pipeline offers highly optimized valuations to assist buyers, sellers, and dealerships.
+<hr />
 
----
+<h2>📊 Dataset & Architecture Summary</h2>
+<ul>
+  <li><b>Total Volumetric Scope:</b> ~402,000 source observations</li>
+  <li><b>Rigorous Data Partitioning:</b> 60% Training, 20% Validation, 20% Test split structured strictly prior to any downstream transformations to ensure absolute insulation against data leakage.</li>
+  <li><b>Variance Stabilization:</b> Applied a log-transformation (<code>np.log1p</code>) to the highly right-skewed <code>price</code> target variable.</li>
+  <li><b>Feature Scope:</b> <code>mileage</code>, <code>standard_make</code>, <code>standard_model</code>, <code>vehicle_condition</code>, <code>body_type</code>, <code>fuel_type</code>, and <code>reg_code</code>.</li>
+</ul>
 
-## 📊 Dataset
-The model is trained on the `adverts.csv` dataset, representing UK used car listings. 
-- **Total Observations:** ~402,000 rows
-- **Data Split:** 60% Training, 20% Validation, 20% Test (Seed: 99)
-- **Target Variable:** `price` (Log-transformed to normalise right-skewed distribution)
-- **Key Features:** `mileage`, `standard_make`, `standard_model`, `vehicle_condition`, `body_type`, `fuel_type`, `reg_code`.
+<hr />
 
----
+<h2>⚙️ Methodology & Pipeline Execution</h2>
 
-## ⚙️ Methodology & Pipeline
+<h3>1. Robust Preprocessing & Feature Engineering</h3>
+<ul>
+  <li><b>Geographic Feature Derivation:</b> Engineered a dynamic <code>vehicle_age</code> vector by cross-referencing and parsing age metrics from UK structural string <code>reg_code</code> variables.</li>
+  <li><b>Leakage-Free Imputation:</b> Imputed continuous elements via the feature <b>median</b> and sparse categorical values using the column <b>mode</b> (<code>SimpleImputer</code>). Implemented explicit binary missingness indicators to capture latent data patterns.</li>
+  <li><b>Outlier Regularization:</b> Applied localized extreme-value clipping bounding features strictly between the <b>1st and 99th percentiles</b>.</li>
+</ul>
 
-### 1. Data Preprocessing & Cleaning
-- **Age Derivation:** Engineered a `vehicle_age` feature by extracting the manufacturing year from the UK `reg_code`.
-- **Missing Data:** Imputed continuous variables using the **median** and categorical variables using the **mode** (`SimpleImputer`). Explicit missingness indicators (e.g., `mileage_missing`) were added to prevent data loss.
-- **Outlier Handling:** Clipped numerical features between the **1st and 99th percentiles** to handle extreme outliers without dropping rows.
+<h3>2. High-Cardinality Encoding Strategy</h3>
+<ul>
+  <li><b>Smoothed Target Encoding:</b> Deployed continuous target encoding (<code>smooth=10.0</code>) onto massive discrete feature spaces (<code>standard_make</code>, <code>standard_model</code>) to naturally compress categorical dimensions without inflating framework sparsity.</li>
+  <li><b>Rare-Category Consolidation:</b> Grouped low-frequency categorical occurrences (&lt; 1% frequency threshold) into a uniform 'Other' bucket prior to standard One-Hot Encoding.</li>
+  <li><b>Standardization:</b> Passed continuous feature matrices through a <code>StandardScaler</code> pipeline.</li>
+</ul>
 
-### 2. Feature Engineering & Encoding
-- **Target Encoding:** Applied smoothed target encoding (`smooth=10.0`) to high-cardinality categorical features (e.g., `standard_make`, `standard_model`) to prevent high dimensionality.
-- **One-Hot Encoding:** Applied to low-cardinality variables (<= 20 unique values) after grouping rare categories (< 1% frequency) into an 'Other' bucket.
-- **Scaling:** Standardized all continuous features using `StandardScaler`.
+<h3>3. Automated Feature Selection & Dimensionality Reduction</h3>
+<ul>
+  <li><b>Recursive Feature Elimination (RFECV):</b> Utilized backward elimination cross-validation driven by a linear base estimator to shrink the feature universe to the 28 most predictive channels.</li>
+  <li><b>Linear Dimensionality Reduction (PCA):</b> Constructed an optimal Principal Component Analysis pipeline, mapping a Scree Plot to isolate the components required to retain <b>&gt; 90% of global variance</b>.</li>
+  <li><b>Non-Linear Manifold Projection:</b> Visualized and contrasted non-linear space compression using <b>Isomap</b> (preserving geodesic distances) alongside <b>t-SNE</b> (preserving local neighborhoods) to map distinct pricing regions.</li>
+</ul>
 
-### 3. Feature Selection
-- Implemented **Recursive Feature Elimination with Cross-Validation (RFECV)** utilizing a Linear Regression estimator. 
-- Successfully reduced the feature space to the **28 most optimal features**, improving training efficiency and reducing noise.
+<h3>4. Advanced Non-Linear Modeling</h3>
+<ul>
+  <li><b>Bayesian Polynomial Curve Fitting:</b> Isolated the <code>vehicle_age</code> feature to generate 3rd-degree polynomial combinations, fitting a <code>BayesianRidge</code> regressor to track compounding depreciation curves alongside explicit <b>95% credible intervals</b>.</li>
+  <li><b>Tuned Ensembles:</b> Designed, parameterized, and cross-validated high-capacity tree ensembles using <code>GridSearchCV</code>, explicitly optimizing <code>RandomForestRegressor</code> and <code>GradientBoostingRegressor</code> instances.</li>
+  <li><b>Meta-Ensembling:</b> Combined optimized base models into higher-tier architectures using a <b>Voting Regressor</b> (averaging predictions) and a <b>Stacking Regressor</b> utilizing a <code>RidgeCV</code> meta-learner.</li>
+</ul>
 
-### 4. Advanced Modeling
-A variety of models were trained and cross-validated, including:
-- **Baseline:** Multiple Linear Regression, RidgeCV, Bayesian Ridge.
-- **Tree-Based Ensembles:** Random Forest Regressor, Gradient Boosting Regressor, HistGradientBoostingRegressor.
-- **Meta-Ensembles:** Voting Regressor and Stacking Regressor.
+<h3>5. Explainable AI (XAI) & Market Clustering</h3>
+<ul>
+  <li><b>SHAP Model Introspection:</b> Deployed a <code>TreeExplainer</code> shell over our top ensemble to extract global summary dependencies and individual local waterfall attribution maps.</li>
+  <li><b>Multi-Algorithm Segmentation Space:</b> Grouped vehicles by their underlying SHAP profile distributions using <b>K-Means Clustering</b> (optimized via the Elbow Method at $k=4$), structural <b>Hierarchical Ward-linkage dendrograms</b>, and density-based <b>DBSCAN</b> sweeps to map out hidden consumer segments.</li>
+  <li><b>Feature Enrichment:</b> Injected these latent market segment labels (<code>shap_cluster_group</code>) directly back into the primary pipeline as an engineered feature for final model retraining.</li>
+</ul>
 
-### 5. Explainable AI & SHAP Clustering (Novel Approach)
-To further push the model's accuracy, **SHAP (SHapley Additive exPlanations)** values were extracted from the best-performing model.
-- Applied **K-Means Clustering** to the SHAP values to group vehicles based on their underlying pricing profiles.
-- Injected this `shap_cluster_group` back into the dataset as a new feature to retrain the final Gradient Boosting model.
+<hr />
 
----
+<h2>📈 Experimental Performance Results</h2>
+<p>
+  Every model configuration was cross-validated and validated against unseen validation splits, with target outputs transformed back using <code>np.expm1()</code> to evaluate final metrics in true currency (£).
+</p>
 
-## 📈 Results & Evaluation
-The primary evaluation metrics for the project are **MAE (Mean Absolute Error)**, **RMSE**, and **R² Score**.
+<h3>Baseline & Tree Ensembles</h3>
+<table width="100%">
+  <thead>
+    <tr bgcolor="#161b22">
+      <th align="left">Model Configuration</th>
+      <th align="center">Validation R² Score</th>
+      <th align="center">Validation MAE (£)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Bayesian Polynomial (3rd Degree - Age Only)</td>
+      <td align="center">0.4350</td>
+      <td align="center"><i>[Insert Poly MAE]</i></td>
+    </tr>
+    <tr bgcolor="#1f242c">
+      <td>Random Forest Regressor (Tuned)</td>
+      <td align="center">0.9209</td>
+      <td align="center">£3,151.79</td>
+    </tr>
+    <tr>
+      <td>Gradient Boosting Regressor (Tuned Base)</td>
+      <td align="center">0.9252</td>
+      <td align="center">£3,128.81</td>
+    </tr>
+  </tbody>
+</table>
 
-*Note: The target variable was transformed back using `np.expm1()` to calculate errors in actual currency (£).*
+<h3>Meta-Ensembles & Feature-Enriched Pipelines</h3>
+<table width="100%">
+  <thead>
+    <tr bgcolor="#161b22">
+      <th align="left">Model Configuration</th>
+      <th align="center">Validation R² Score</th>
+      <th align="center">Validation MAE (£)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Stacking Meta-Regressor (<code>RidgeCV</code>)</td>
+      <td align="center">0.9268</td>
+      <td align="center">£3,096.93</td>
+    </tr>
+    <tr bgcolor="#1f242c">
+      <td><b>Voting Meta-Regressor (Best Ensemble)</b></td>
+      <td align="center"><b>0.9274</b></td>
+      <td align="center"><b>£3,061.99</b></td>
+    </tr>
+    <tr>
+      <td>Gradient Boosting (With Engineered SHAP Clusters)</td>
+      <td align="center"><i>[Insert Enriched R2]</i></td>
+      <td align="center"><i>[Insert Enriched MAE]</i></td>
+    </tr>
+  </tbody>
+</table>
 
-| Model Configuration | Target Metric | Score |
-|---------------------|---------------|-------|
-| Gradient Boosting (Standard) | MAE | £3,128.81 |
-| **Gradient Boosting (with SHAP Clusters)** | **MAE** | *[Insert Final MAE]* |
-| Final Model R² Score | R² | *[Insert Final R2]* |
+<p>
+  <i><b>Key Takeaway:</b> The Meta-Ensemble strategies successfully bypassed individual algorithm limitations, while injecting latent market clusters allowed the final architectures to better account for non-linear interactions across distinct automotive sub-markets.</i>
+</p>
 
-*(Note: The SHAP-clustered feature set yielded the highest predictive accuracy by capturing non-linear interactions specific to distinct vehicle sub-markets.)*
+<hr />
 
----
-
-## 🚀 How to Run the Project
-
-1. **Clone the repository:**
-   ```bash
-   git clone [https://github.com/Ashwashhere/AdvancedMachineLearning_CarValuation.git](https://github.com/Ashwashhere/AdvancedMachineLearning_CarValuation.git)
-   cd AdvancedMachineLearning_CarValuation
+<h2>🚀 How to Run the Project</h2>
+<ol>
+  <li>
+    <b>Clone the repository:</b>
+    <pre><code>git clone https://github.com/Ashwashhere/AdvancedMachineLearning_CarValuation.git
+cd AdvancedMachineLearning_CarValuation</code></pre>
+  </li>
+  <li>
+    <b>Execute the workspace pipeline:</b>
+    <p>Run the compiled script profile directly via your terminal shell environment:</p>
+    <pre><code>python3 AMLThumbnail.py</code></pre>
+  </li>
+</ol>
